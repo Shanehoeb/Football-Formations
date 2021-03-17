@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from matplotlib import animation
 
 
-# load away data
+# load away data from  https://github.com/metrica-sports/sample-data 
 link1 = r"C:\Users\Shane\Desktop\Year 3\Mathematical and Data Modelling\Phase C\sample-data-master\data\Sample_Game_1\Sample_Game_1_RawTrackingData_Away_Team.csv"
 df_away = pd.read_csv(link1, skiprows=2)
 df_away.sort_values('Time [s]', inplace=True)
