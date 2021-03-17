@@ -8,3 +8,4 @@ Datasets :
 
 
 Interesting Repo : https://github.com/Friends-of-Tracking-Data-FoTD
+Course on Modelling in Football : https://uppsala.instructure.com/courses/28112
