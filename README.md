@@ -9,3 +9,11 @@ Datasets :
 
 Interesting Repo : https://github.com/Friends-of-Tracking-Data-FoTD
 Course on Modelling in Football : https://uppsala.instructure.com/courses/28112
+
+Relevant Papers : 
+- "A network-based approach to evaluate the performance of football teams". Available from : https://www.researchgate.net/publication/280520469_A_network-based_approach_to_evaluate_the_performance_of_football_teams
+
+
+Links : 
+PCA : - https://www.youtube.com/watch?v=ofWji_wQBEE
+      - https://jakevdp.github.io/PythonDataScienceHandbook/05.09-principal-component-analysis.html
