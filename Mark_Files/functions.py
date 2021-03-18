@@ -4,6 +4,14 @@ import json
 import math
 
 
+class player:
+  def __init__(self, name, id, x_loc, y_loc):
+    self.name = name
+    self.id = id
+    self.xloc = x_loc
+    self.yloc = y_loc
+
+
 '''This gets the names of both the teams, as there is a dict at the start of the
 game that has all of the game info'''
 def get_teams(data):
@@ -35,19 +43,10 @@ def get_lineup_arrays(team):
             players_added += len(list)
         next_row = []
         for j in range(players_added, players_added + formation[rows_added-1]):
-            next_row.append((lineup_array[j]['player']['name'], lineup_array[j]['position']['id']))
+            next_row.append((lineup_array[j]['player']['name'], lineup_array[j]['player']['id']))
         rows_added += 1
         lineup.append(next_row)
     return lineup
-
-
-def get_line_up_with_player_id(team):
-    line_up_with_player_id = []
-    tactics = team['tactics']
-    lineup_array = tactics['lineup']
-    for j in range(len(lineup_array)):
-        line_up_with_player_id.append((lineup_array[j]['player']['name'], lineup_array[j]['player']['id']))
-    return line_up_with_player_id
 
 
 '''The event type parameter is a string of which event you want to isolate From
@@ -123,7 +122,7 @@ def plot_arrows(array_1, array_2):
 
 
 def pitch_dimensions(all_events):
-    min_length = 60
+    min_length = 0
     max_length = 0
     max_width = 0
     min_width = 0
@@ -150,7 +149,7 @@ def dist_between(point_1, point_2):
 def plot_pitch_markings():
     max_length = 120
     max_width = 80
-    min_length = 90
+    min_length = 0
     box_length = 16.5
     box_width = 40.3
     six_yard_length = 5.5
@@ -204,6 +203,53 @@ def plot_pitch_markings():
     goal_width_plot_y = np.linspace(distance_from_touch_to_goal, (80 - distance_from_touch_to_goal), 1000)
     goal_width_plot = goal_width_plot_y*0 + (max_length + goal_length)
     plt.plot(goal_width_plot, goal_width_plot_y, 'black')
+
+    box_side_1 = np.linspace(0, box_length, 1000)
+    box_side_1_y = box_side_1*0 + distance_from_touch_to_box
+    plt.plot(box_side_1, box_side_1_y, 'black')
+
+    box_side_2_y = box_side_1*0 + (80 - distance_from_touch_to_box)
+    plt.plot(box_side_1, box_side_2_y, 'black')
+
+    box_side_width_y = np.linspace(distance_from_touch_to_box, (80 - distance_from_touch_to_box), 1000)
+    box_side_width = box_side_width_y*0 + (box_length)
+    plt.plot(box_side_width, box_side_width_y, 'black')
+
+    six_yard_side_1 = np.linspace(0, six_yard_length, 1000)
+    six_yard_side_1_y = six_yard_side_1*0 + distance_from_touch_to_six
+    plt.plot(six_yard_side_1, six_yard_side_1_y, 'black')
+
+    six_yard_side_2_y = six_yard_side_1*0 + (80 - distance_from_touch_to_six)
+    plt.plot(six_yard_side_1, six_yard_side_2_y, 'black')
+
+    six_yard_box_width_y = np.linspace(distance_from_touch_to_six, (80 - distance_from_touch_to_six), 1000)
+    six_yard_box_width = six_yard_box_width_y*0 + (six_yard_length)
+    plt.plot(six_yard_box_width, six_yard_box_width_y, 'black')
+
+    pitch_width_plot_y = np.linspace(0, 80, 1000)
+    pitch_width_plot = pitch_width_plot_y*0
+    plt.plot(pitch_width_plot, pitch_width_plot_y, 'black')
+
+    pitch_length_1 = np.linspace(min_length, max_length, 1000)
+    pitch_length_1_y = pitch_length_1*0 + 0
+    plt.plot(pitch_length_1, pitch_length_1_y, 'black')
+
+    pitch_length_2_y = pitch_length_1*0 + max_width
+    plt.plot(pitch_length_1, pitch_length_2_y, 'black')
+
+    goal_length_1 = np.linspace(0, -goal_length, 1000)
+    goal_length_1_y = goal_length_1*0 + distance_from_touch_to_goal
+    plt.plot(goal_length_1, goal_length_1_y, 'black')
+
+    goal_length_2_y = goal_length_1*0 + (max_width - distance_from_touch_to_goal)
+    plt.plot(goal_length_1, goal_length_2_y, 'black')
+
+    goal_width_plot_y = np.linspace(distance_from_touch_to_goal, (80 - distance_from_touch_to_goal), 1000)
+    goal_width_plot = goal_width_plot_y*0 + (-goal_length)
+    plt.plot(goal_width_plot, goal_width_plot_y, 'black')
+
+    plt.plot(np.array([60, 60]), np.array([0, max_width]), 'black')
+
     return
 
 
@@ -273,3 +319,25 @@ def which_defenders_in_front_of_goal(striker, defenders, post_angles):
         if post_angles[1] < angle < post_angles[0] and defenders[i][0] > striker[0]:
             blocking_defenders.append(defenders[i])
     return blocking_defenders
+
+
+'''Get a rough estimate of the initial positions of the players in the starting
+XI'''
+def initial_positions(lineup, pitch_dimensions, team_no):
+    team_locations = []
+    num_length_sections = len(lineup) - 1
+    length_increments = np.mean(pitch_dimensions[0])/num_length_sections
+    for i in range(len(lineup)):
+        if team_no == 1:
+            player_length = length_increments*i - 1
+        elif team_no == 2:
+            player_length = ((team_no-1)*pitch_dimensions[0][1]) - (length_increments*i - 1)
+        num_width_sections = len(lineup[i])
+        width_increments = np.max(pitch_dimensions[1])/num_width_sections
+        sections = []
+        for j in range(len(lineup[i])+1):
+            sections.append(width_increments*j)
+        for j in range(len(lineup[i])):
+            player_width = np.mean([sections[j], sections[j+1]])
+            team_locations.append(player(lineup[i][j][0], lineup[i][j][1], float(player_length), float(player_width)))
+    return np.asarray(team_locations)
