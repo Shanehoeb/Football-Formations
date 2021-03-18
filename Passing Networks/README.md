@@ -7,3 +7,4 @@ Instructions for plot_passing_networks.py:
 - Run plot_passing_networks.py.
 
 Portugal Game ID : 7576
+Barcelona Game ID : 15946
