@@ -26,17 +26,28 @@ def get_lineup_arrays(team):
     formation = [int(x) for x in str(formation)]
     lineup_array = tactics['lineup']
     goalkeeper = lineup_array[0]['player']['name']
-    defence = []
-    for i in range(1, formation[0]+1):
-        defence.append(lineup_array[i]['player']['name'])
-    midfield = []
-    for i in range(formation[0] + 1, formation[0]+formation[1]+1):
-        midfield.append(lineup_array[i]['player']['name'])
-    attack = []
-    for i in range(formation[0]+formation[1]+1, int(np.sum(formation))+1):
-        attack.append(lineup_array[i]['player']['name'])
-    lineup = [[goalkeeper], defence, midfield, attack]
+    lineup = [[(goalkeeper, 1)]]
+    # adding the goalkeeper
+    rows_added = 1
+    while rows_added < len(formation)+1:
+        players_added = 0
+        for list in lineup:
+            players_added += len(list)
+        next_row = []
+        for j in range(players_added, players_added + formation[rows_added-1]):
+            next_row.append((lineup_array[j]['player']['name'], lineup_array[j]['position']['id']))
+        rows_added += 1
+        lineup.append(next_row)
     return lineup
+
+
+def get_line_up_with_player_id(team):
+    line_up_with_player_id = []
+    tactics = team['tactics']
+    lineup_array = tactics['lineup']
+    for j in range(len(lineup_array)):
+        line_up_with_player_id.append((lineup_array[j]['player']['name'], lineup_array[j]['player']['id']))
+    return line_up_with_player_id
 
 
 '''The event type parameter is a string of which event you want to isolate From
