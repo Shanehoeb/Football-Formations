@@ -5,3 +5,5 @@ Instructions for plot_passing_networks.py:
 - Change the paths to the json files in the plot_passing_networks.py function and team name. 
 - Change path in the passing_network.py file from the downloaded github repo to where plot_config.json is on your computer (in the visualization folder).
 - Run plot_passing_networks.py.
+
+Portugal Game ID : 7576
