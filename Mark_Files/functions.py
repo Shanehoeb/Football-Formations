@@ -341,3 +341,25 @@ def initial_positions(lineup, pitch_dimensions, team_no):
             player_width = np.mean([sections[j], sections[j+1]])
             team_locations.append(player(lineup[i][j][0], lineup[i][j][1], float(player_length), float(player_width)))
     return np.asarray(team_locations)
+
+
+'''Plot the current positions of the players on the pitch'''
+def plot_team(team_1_loc, team_2_loc):
+    for player in team_1_loc:
+        plt.scatter(player.xloc, player.yloc, c='b')
+    for player in team_2_loc:
+        plt.scatter(player.xloc, player.yloc, c='r')
+    plot_pitch_markings()
+    plt.ylim(0, 80)
+    return
+
+
+def identify_player(event, team_list):
+    for team in team_list:
+        for player in team:
+            if player.id == event['player']['id']:
+                return event['location'], player
+
+
+def change_in_position(location, player):
+    return

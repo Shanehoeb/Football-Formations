@@ -1,6 +1,6 @@
 from functions import *
 
-file = 'events/19725.json'
+file = 'events/19728.json'
 f = open(file)
 loaded_file = json.load(f)
 
@@ -14,16 +14,12 @@ dimensions = ([0, 120], [0, 80])
 initial_pos_1 = initial_positions(lineup1, dimensions, 1)
 initial_pos_2 = initial_positions(lineup2, dimensions, 2)
 
-for player in initial_pos_1:
-    plt.scatter(player.xloc, player.yloc, c='b')
+for i in range(np.size(loaded_file)):
+    loc, player = identify_player(loaded_file[i], [initial_pos_1, initial_pos_2])
+    print(player.name)
 
-for player in initial_pos_2:
-    plt.scatter(player.xloc, player.yloc, c='r')
-
-
-plot_pitch_markings()
-plt.ylim(0, 80)
-plt.show()
+#plot_team(initial_pos_1, initial_pos_2)
+#plt.show()
 
 
 #for location in initial_pos:
