@@ -14,7 +14,7 @@ Course on Modelling in Football : https://uppsala.instructure.com/courses/28112
 
 Relevant Papers : 
 - "A network-based approach to evaluate the performance of football teams". Available from : https://www.researchgate.net/publication/280520469_A_network-based_approach_to_evaluate_the_performance_of_football_teams
-- "A framework for the fine-grained evaluation of the instantaneous expected value of soccer possessions". Available from : https://arxiv.org/abs/2011.09426
+- "A framework for the fine-grained evaluation of the instantaneous expected value of soccer possessions". Available from : https://arxiv.org/abs/2011.09426 (Evaluating player decisions from tracking and event data)
 
 Links : 
 PCA : - https://www.youtube.com/watch?v=ofWji_wQBEE
