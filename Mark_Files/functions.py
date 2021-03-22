@@ -5,11 +5,13 @@ import math
 
 
 class player:
-  def __init__(self, name, id, x_loc, y_loc):
+  def __init__(self, name, id, x_loc, y_loc, events, team):
     self.name = name
     self.id = id
     self.xloc = x_loc
     self.yloc = y_loc
+    self.contributions = events
+    self.team = team
 
 
 '''This gets the names of both the teams, as there is a dict at the start of the
@@ -34,7 +36,7 @@ def get_lineup_arrays(team):
     formation = [int(x) for x in str(formation)]
     lineup_array = tactics['lineup']
     goalkeeper = lineup_array[0]['player']['name']
-    lineup = [[(goalkeeper, 1)]]
+    lineup = [[(goalkeeper, lineup_array[0]['player']['id'])]]
     # adding the goalkeeper
     rows_added = 1
     while rows_added < len(formation)+1:
@@ -323,7 +325,7 @@ def which_defenders_in_front_of_goal(striker, defenders, post_angles):
 
 '''Get a rough estimate of the initial positions of the players in the starting
 XI'''
-def initial_positions(lineup, pitch_dimensions, team_no):
+def initial_positions(lineup, pitch_dimensions, team_no, team_name):
     team_locations = []
     num_length_sections = len(lineup) - 1
     length_increments = np.mean(pitch_dimensions[0])/num_length_sections
@@ -339,7 +341,7 @@ def initial_positions(lineup, pitch_dimensions, team_no):
             sections.append(width_increments*j)
         for j in range(len(lineup[i])):
             player_width = np.mean([sections[j], sections[j+1]])
-            team_locations.append(player(lineup[i][j][0], lineup[i][j][1], float(player_length), float(player_width)))
+            team_locations.append(player(lineup[i][j][0], lineup[i][j][1], float(player_length), float(player_width), [], team_name))
     return np.asarray(team_locations)
 
 
@@ -350,7 +352,7 @@ def plot_team(team_1_loc, team_2_loc):
     for player in team_2_loc:
         plt.scatter(player.xloc, player.yloc, c='r')
     plot_pitch_markings()
-    plt.ylim(0, 80)
+    #plt.ylim(0, 80)
     return
 
 
@@ -361,5 +363,37 @@ def identify_player(event, team_list):
                 return event['location'], player
 
 
+def check_sub(event, team_list):
+    if event['type']['name'] != 'Substitution':
+        return 0
+    else:
+        for team in team_list:
+            for player in team:
+                if player.id == event['player']['id']:
+                    player.id = event['substitution']['replacement']['id']
+                    player.name = event['substitution']['replacement']['name']
+        return 0
+
+
 def change_in_position(location, player):
-    return
+    print(location)
+    print(player.xloc, ',', player.yloc)
+    change_in_loc = np.array([player.xloc, player.yloc]) - np.array(location)
+    print(change_in_loc)
+    return change_in_loc
+
+
+def change_all_locations(event, locs):
+    check_sub(event, locs)
+    if 'location' in event and 'player' in event:
+        loc, player = identify_player(event, locs)
+        player_change = change_in_position(loc, player)
+        for loc_array in locs:
+            for other_player in loc_array:
+                if other_player.team == player.team:
+                    other_player.xloc += player_change[0]
+                    other_player.yloc += player_change[1]
+                else:
+                    other_player.xloc -= player_change[0]
+                    other_player.yloc -= player_change[1]
+    return locs
