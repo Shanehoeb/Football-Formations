@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-Columns = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32]
+Columns = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32]
 TableOutput = pd.read_excel("appearance_data_tottenham.xlsx",usecols=Columns)
 
 # split into input (X) and output (y) variables
@@ -13,9 +13,6 @@ from numpy.random import seed
 from tensorflow.random import set_seed
 set_seed(0)
 seed(0)
-
-print(x)
-print(y)
 
 iris = TableOutput
 
@@ -35,7 +32,7 @@ y = to_categorical(y)
 
 from sklearn.model_selection import train_test_split
 
-x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.25)
+x_train, x_test, y_train, y_test = train_test_split(x,y, test_size = 0.3)
 
 from sklearn.preprocessing import StandardScaler
 
