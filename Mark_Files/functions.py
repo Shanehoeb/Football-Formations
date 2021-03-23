@@ -348,14 +348,14 @@ def initial_positions(lineup, pitch_dimensions, team_no, team_name):
 '''Plot the current positions of the players on the pitch'''
 def plot_team(team_1_loc, team_2_loc):
     for player in team_1_loc:
-        plt.scatter(player.xloc, player.yloc, c='b')
+        plt.scatter(player.xloc, player.yloc, c='b', s=5)
     for player in team_2_loc:
-        plt.scatter(player.xloc, player.yloc, c='r')
+        plt.scatter(player.xloc, player.yloc, c='r', s=5)
     plot_pitch_markings()
-    #plt.ylim(0, 80)
     return
 
 
+'''Identify the player who was responsible for an event in a game'''
 def identify_player(event, team_list):
     for team in team_list:
         for player in team:
@@ -363,37 +363,47 @@ def identify_player(event, team_list):
                 return event['location'], player
 
 
+'''See if there has been a substitution before every event so that the list of
+players can be updated'''
 def check_sub(event, team_list):
     if event['type']['name'] != 'Substitution':
-        return 0
+        return
     else:
         for team in team_list:
             for player in team:
                 if player.id == event['player']['id']:
                     player.id = event['substitution']['replacement']['id']
                     player.name = event['substitution']['replacement']['name']
-        return 0
+        return
 
 
 def change_in_position(location, player):
-    print(location)
-    print(player.xloc, ',', player.yloc)
-    change_in_loc = np.array([player.xloc, player.yloc]) - np.array(location)
-    print(change_in_loc)
+    change_in_loc = np.array(location) - np.array([player.xloc, player.yloc])
     return change_in_loc
 
 
-def change_all_locations(event, locs):
-    check_sub(event, locs)
-    if 'location' in event and 'player' in event:
-        loc, player = identify_player(event, locs)
-        player_change = change_in_position(loc, player)
-        for loc_array in locs:
-            for other_player in loc_array:
-                if other_player.team == player.team:
-                    other_player.xloc += player_change[0]
-                    other_player.yloc += player_change[1]
-                else:
-                    other_player.xloc -= player_change[0]
-                    other_player.yloc -= player_change[1]
-    return locs
+def change_all_locations(event, team_list, player_in_event, loc_change, pitch_dimensions):
+    check_sub(event, team_list)
+    for team in team_list:
+        for player in team:
+            player.xloc = location_change(pitch_dimensions, player.xloc, loc_change, 'x')
+            player.yloc = location_change(pitch_dimensions, player.yloc, loc_change, 'y')
+    return team_list
+
+
+def location_change(pitch_dimensions, loc, location_change, x_or_y):
+    if x_or_y == 'x':
+        index = 0
+    elif x_or_y == 'y':
+        index = 1
+    if pitch_dimensions[index][0] < (loc + location_change[index]):
+        if (loc + location_change[index]) < pitch_dimensions[index][1]:
+            new_loc = loc + location_change[index]
+        else:
+            new_loc = pitch_dimensions[index][1]
+    elif (loc + location_change[index]) < pitch_dimensions[index][1]:
+        if pitch_dimensions[index][0] < (loc + location_change[index]):
+            new_loc = loc + location_change[index]
+        else:
+            new_loc = pitch_dimensions[index][0]
+    return new_loc
