@@ -16,18 +16,11 @@ locations_2 = initial_positions(lineup2, dimensions, 2, teams[1])
 plot_team(locations_1, locations_2)
 
 team_array = [locations_1, locations_2]
-for moment_index in range(4, 100):
-    plot_team(team_array[0], team_array[1])
+for moment_index in range(4, 15):
+    #plot_team(team_array[0], team_array[1])
     loc, player = identify_player(loaded_file[moment_index], team_array)
     player_loc = [player.xloc, player.yloc]
     change_in_pos = change_in_position(loc, player)
-    print(player.name)
-    print(player_loc)
-    print(loc)
-    print(change_in_pos)
     team_array = change_all_locations(loaded_file[moment_index], team_array, player, change_in_pos, dimensions)
 
 #plot_team(change[0], change[1])
-plt.show()
-
-#for location in initial_pos:

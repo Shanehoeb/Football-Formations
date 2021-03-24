@@ -384,11 +384,22 @@ def change_in_position(location, player):
 
 def change_all_locations(event, team_list, player_in_event, loc_change, pitch_dimensions):
     check_sub(event, team_list)
+    possible_distance = distance_possible_to_travel(event, 5)
+    print(possible_distance)
     for team in team_list:
         for player in team:
             player.xloc = location_change(pitch_dimensions, player.xloc, loc_change, 'x')
             player.yloc = location_change(pitch_dimensions, player.yloc, loc_change, 'y')
     return team_list
+
+
+''' def location_change_attackers(pitch_dimensions, loc, change_in_loc, distance)
+    return
+    '''
+
+'''def location_change_defenders(pitch_dimensions, loc, change_in_loc)
+    return
+    '''
 
 
 def location_change(pitch_dimensions, loc, location_change, x_or_y):
@@ -407,3 +418,12 @@ def location_change(pitch_dimensions, loc, location_change, x_or_y):
         else:
             new_loc = pitch_dimensions[index][0]
     return new_loc
+
+
+def distance_possible_to_travel(event, speed):
+    if 'duration' in event:
+        duration = event['duration']
+    else:
+        return
+    possible_distance = speed*duration
+    return possible_distance
