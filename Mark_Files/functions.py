@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 import math
+import random
 
 
 class player:
@@ -75,16 +76,6 @@ def get_locations(events_array):
     return start, end
 
 
-'''This follows the exact same code as the above function. If the event is a
-shot then we get the array of all the expected goals for those shots'''
-def get_xg(shots):
-    xgs = []
-    for i in range(np.size(shots)):
-        xg = shots[i]['shot']['statsbomb_xg']
-        xgs.append(xg)
-    return xgs
-
-
 '''Plotting 2D arrays was a pain so just created a func'''
 def plot_2d_array(array, label):
     x_array = []
@@ -110,17 +101,6 @@ def defender_locations(events_array):
                 defend_locations.append(freeze_frame[j]['location'])
         locations_array.append(defend_locations)
     return locations_array
-
-
-'''Plots an arrow from the start of the shot to the end'''
-def plot_arrows(array_1, array_2):
-    for i in range(np.shape(array_1)[0]):
-        x1 = array_1[i][0]
-        x2 = array_2[i][0]
-        y1 = array_1[i][1]
-        y2 = array_2[i][1]
-        plt.arrow(x1, y1, (x2 - x1), (y2 - y1), head_width=0.5, head_length=0.5, length_includes_head=True)
-    return
 
 
 def pitch_dimensions(all_events):
@@ -255,46 +235,6 @@ def plot_pitch_markings():
     return
 
 
-'''This is used for when we works out the distances of the defenders away from
-the attacker. We can then get the n number of smallest distances to work out
-who the closest n defenders are.'''
-def smallest_n_elements(array, n):
-    smallest = []
-    size_order = sorted(array)
-    i = 0
-    while i <= n - 1 and i < np.size(size_order):
-        smallest.append(size_order[i])
-        i += 1
-    return smallest
-
-'''Gets the closest n defenders from an array from a certain event.'''
-def closest_defenders(shot_loc, defender_loc, no_of_defenders):
-    distances = []
-    for i in range(np.shape(defender_loc)[0]):
-        distance = dist_between(defender_loc[i], shot_loc)
-        distances.append(distance)
-    smallest_distances = smallest_n_elements(distances, no_of_defenders)
-    closest = []
-    for distance in smallest_distances:
-        for dist in distances:
-            if distance == dist:
-                index_of_small = distances.index(dist)
-                closest.append(defender_loc[index_of_small])
-                break
-    return closest
-
-
-'''The average dist from all of the defender distances'''
-def avg_distance_from_defender(attacker, defenders):
-    num_defenders = np.shape(defenders)[0]
-    tot_distance = 0
-    for i in range(num_defenders):
-        distance_from_attacker = dist_between(defenders[i], attacker)
-        tot_distance += distance_from_attacker
-    mean_distance = tot_distance/num_defenders
-    return mean_distance
-
-
 '''Used to calculate the angle from the event to either post and also to work
 out the angle between a defender and the shot'''
 def angle_between(point_1, point_2):
@@ -309,18 +249,6 @@ def angle_between(point_1, point_2):
     else:
         angle_between_points = math.atan(y_diff/x_diff)
     return angle_between_points
-
-
-'''If we know the angle to both posts, and the angle from the shot to every
-defender, then we can work out which defenders are in the way of the shot and
-therefore most likely to block it (hence decreasing the likelihood of a goal)'''
-def which_defenders_in_front_of_goal(striker, defenders, post_angles):
-    blocking_defenders = []
-    for i in range(np.shape(defenders)[0]):
-        angle = angle_between(striker, defenders[i])
-        if post_angles[1] < angle < post_angles[0] and defenders[i][0] > striker[0]:
-            blocking_defenders.append(defenders[i])
-    return blocking_defenders
 
 
 '''Get a rough estimate of the initial positions of the players in the starting
@@ -383,23 +311,56 @@ def change_in_position(location, player):
 
 
 def change_all_locations(event, team_list, player_in_event, loc_change, pitch_dimensions):
+    goalkeepers = [team_list[0][0], team_list[1][0]]
     check_sub(event, team_list)
     possible_distance = distance_possible_to_travel(event, 5)
-    print(possible_distance)
+    possession_team = which_team(event)
     for team in team_list:
         for player in team:
-            player.xloc = location_change(pitch_dimensions, player.xloc, loc_change, 'x')
-            player.yloc = location_change(pitch_dimensions, player.yloc, loc_change, 'y')
+            if player not in goalkeepers:
+                if player.name == player_in_event:
+                    if event['type']['name'] == 'carry':
+                        player.xloc = event['carry']['end_location'][0]
+                        player.yloc = event['carry']['end_location'][1]
+                elif player.team == possession_team and player.name != player_in_event:
+                    location_change_attackers(pitch_dimensions, player, loc_change, possible_distance)
+                else:
+                    location_change_defenders(pitch_dimensions, player, loc_change, possible_distance)
     return team_list
 
 
-''' def location_change_attackers(pitch_dimensions, loc, change_in_loc, distance)
+def location_change_attackers(pitch_dimensions, player, change_in_loc, distance):
+    angle = math.atan(change_in_loc[1]/change_in_loc[0])
+    x_loc = player.xloc
+    y_loc = player.yloc
+    i = 0
+    while i != 1:
+        player.xloc, player.yloc = change_loc(x_loc, y_loc, angle, distance)
+        if is_on_pitch(player, pitch_dimensions) == True:
+            i = 1
     return
-    '''
 
-'''def location_change_defenders(pitch_dimensions, loc, change_in_loc)
+
+def change_loc(x, y, angle, distance):
+    movement_angle = random.uniform(-angle, angle)
+    movement_distance = random.uniform(0, distance)
+    x += movement_distance*math.cos(movement_angle)
+    y += movement_distance*math.sin(movement_angle)
+    return x, y
+
+
+def location_change_defenders(pitch_dimensions, player, change_in_loc, distance):
     return
-    '''
+
+
+def is_on_pitch(player, pitch_dimensions):
+    if pitch_dimensions[0][0] < player.xloc < pitch_dimensions[0][1]:
+        if pitch_dimensions[1][0] < player.yloc < pitch_dimensions[1][1]:
+            return True
+        else:
+            return False
+    else:
+        return False
 
 
 def location_change(pitch_dimensions, loc, location_change, x_or_y):
@@ -420,10 +381,14 @@ def location_change(pitch_dimensions, loc, location_change, x_or_y):
     return new_loc
 
 
+def which_team(event):
+    return event['possession_team']['name']
+
+
 def distance_possible_to_travel(event, speed):
     if 'duration' in event:
         duration = event['duration']
     else:
-        return
+        return 0
     possible_distance = speed*duration
     return possible_distance
