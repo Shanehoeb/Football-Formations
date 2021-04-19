@@ -16,7 +16,7 @@ locations_2 = initial_positions(lineup2, dimensions, 2, teams[1])
 plot_team(locations_1, locations_2)
 
 team_array = [locations_1, locations_2]
-for moment_index in range(4, 30):
+for moment_index in range(4, 50):
     plot_team(team_array[0], team_array[1])
     loc, player = identify_player(loaded_file[moment_index], team_array)
     player_loc = [player.xloc, player.yloc]

@@ -291,6 +291,16 @@ def identify_player(event, team_list):
                 return event['location'], player
 
 
+def check_for_recipient(event, team_list):
+    if event['type']['name'] == 'Pass':
+        for team in team_list:
+            for player in team:
+                if player.id == event['pass']['recipient']['id']:
+                    return event['pass']['end_location'], player
+    else:
+        return None, None
+
+
 '''See if there has been a substitution before every event so that the list of
 players can be updated'''
 def check_sub(event, team_list):
@@ -315,27 +325,53 @@ def change_all_locations(event, team_list, player_in_event, loc_change, pitch_di
     check_sub(event, team_list)
     possible_distance = distance_possible_to_travel(event, 5)
     possession_team = which_team(event)
-    for team in team_list:
-        for player in team:
-            if player not in goalkeepers:
-                if player.name == player_in_event:
-                    if event['type']['name'] == 'carry':
-                        player.xloc = event['carry']['end_location'][0]
-                        player.yloc = event['carry']['end_location'][1]
-                elif player.team == possession_team and player.name != player_in_event:
-                    location_change_attackers(pitch_dimensions, player, loc_change, possible_distance)
-                else:
-                    location_change_defenders(pitch_dimensions, player, loc_change, possible_distance)
+    if check_for_freeze_frame == True:
+        team_list = convert_from_freeze_frame(event, team_list)
+        return team_list
+    if event['type']['name'] == 'Carry':
+        player_in_event.xloc = event['carry']['end_location'][0]
+        player_in_event.yloc = event['carry']['end_location'][1]
+    elif event['type']['name'] == ['Pass']:
+        recipient_location, recipient = check_for_recipient(event, team_list)
+        recipient.xloc = recipient_location[0]
+        recipient.yloc = recipient_location[1]
+    else:
+        player_in_event.xloc = event['location'][0]
+        player_in_event.yloc = event['location'][1]
+    if loc_change[0] == 0 and loc_change[1] == 0:
+        return team_list
+    else:
+        for team in team_list:
+            for player in team:
+                if player not in goalkeepers:
+                    location_change(pitch_dimensions, player, loc_change, possible_distance)
     return team_list
 
 
-def location_change_attackers(pitch_dimensions, player, change_in_loc, distance):
+def check_for_freeze_frame(event):
+    if event['type']['name'] == 'Shot':
+        return True
+    else:
+        return False
+
+
+def convert_from_freeze_frame(event, team_list):
+    freeze_frame = event['shot']['freeze_frame']
+    for i in range(np.shape(freeze_frame)[0]):
+        for team in team_list:
+            for player in team:
+                if freeze_frame[i]['player']['name'] == player.name:
+                    player.xloc = freeze_frame[i]['location'][0]
+                    player.yloc = freeze_frame[i]['location'][1]
+    return team_list
+
+
+
+def location_change(pitch_dimensions, player, change_in_loc, distance):
     angle = math.atan(change_in_loc[1]/change_in_loc[0])
-    x_loc = player.xloc
-    y_loc = player.yloc
     i = 0
     while i != 1:
-        player.xloc, player.yloc = change_loc(x_loc, y_loc, angle, distance)
+        player.xloc, player.yloc = change_loc(player.xloc, player.yloc, angle, distance)
         if is_on_pitch(player, pitch_dimensions) == True:
             i = 1
     return
@@ -343,13 +379,20 @@ def location_change_attackers(pitch_dimensions, player, change_in_loc, distance)
 
 def change_loc(x, y, angle, distance):
     movement_angle = random.uniform(-angle, angle)
-    movement_distance = random.uniform(0, distance)
+    movement_distance = random.uniform(-distance, distance)
     x += movement_distance*math.cos(movement_angle)
     y += movement_distance*math.sin(movement_angle)
     return x, y
 
 
 def location_change_defenders(pitch_dimensions, player, change_in_loc, distance):
+    angle = math.atan(change_in_loc[1]/change_in_loc[0])
+    i = 0
+    while i != 1:
+        movement_distance = random.uniform(0, -distance)
+        player.xloc, player.yloc = change_loc(player.xloc, player.yloc, angle, distance)
+        if is_on_pitch(player, pitch_dimensions):
+            i = 1
     return
 
 
@@ -361,24 +404,6 @@ def is_on_pitch(player, pitch_dimensions):
             return False
     else:
         return False
-
-
-def location_change(pitch_dimensions, loc, location_change, x_or_y):
-    if x_or_y == 'x':
-        index = 0
-    elif x_or_y == 'y':
-        index = 1
-    if pitch_dimensions[index][0] < (loc + location_change[index]):
-        if (loc + location_change[index]) < pitch_dimensions[index][1]:
-            new_loc = loc + location_change[index]
-        else:
-            new_loc = pitch_dimensions[index][1]
-    elif (loc + location_change[index]) < pitch_dimensions[index][1]:
-        if pitch_dimensions[index][0] < (loc + location_change[index]):
-            new_loc = loc + location_change[index]
-        else:
-            new_loc = pitch_dimensions[index][0]
-    return new_loc
 
 
 def which_team(event):
