@@ -268,18 +268,17 @@ def initial_positions(lineup, pitch_dimensions, team_no, team_name):
             sections.append(width_increments*j)
         for j in range(len(lineup[i])):
             player_width = np.mean([sections[j], sections[j+1]])
-            team_locations.append(player(lineup[i][j][0], lineup[i][j][1], float(player_length), float(player_width), [], team_name))
+            team_locations.append(player(lineup[i][j][0], lineup[i][j][1], float(player_length), float(player_width), team_name))
     return np.asarray(team_locations)
 
 
 '''Plot the current positions of the players on the pitch'''
 def plot_team(team_1_loc, team_2_loc):
     for player in team_1_loc:
-        plt.scatter(player.xloc, player.yloc, c='b', s=5, label='team_mates')
+        plt.scatter(player.xloc, player.yloc, c='b', s=5)
     for player in team_2_loc:
-        plt.scatter(player.xloc, player.yloc, c='r', s=5, label='opponents')
+        plt.scatter(player.xloc, player.yloc, c='r', s=5)
     plot_pitch_markings()
-    plt.legend(loc='best')
     return
 
 
