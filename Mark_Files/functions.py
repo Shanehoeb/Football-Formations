@@ -6,12 +6,11 @@ import random
 
 
 class player:
-  def __init__(self, name, id, x_loc, y_loc, events, team):
+  def __init__(self, name, id, x_loc, y_loc, team):
     self.name = name
     self.id = id
     self.xloc = x_loc
     self.yloc = y_loc
-    self.contributions = events
     self.team = team
 
 
@@ -276,10 +275,11 @@ def initial_positions(lineup, pitch_dimensions, team_no, team_name):
 '''Plot the current positions of the players on the pitch'''
 def plot_team(team_1_loc, team_2_loc):
     for player in team_1_loc:
-        plt.scatter(player.xloc, player.yloc, c='b', s=5)
+        plt.scatter(player.xloc, player.yloc, c='b', s=5, label='team_mates')
     for player in team_2_loc:
-        plt.scatter(player.xloc, player.yloc, c='r', s=5)
+        plt.scatter(player.xloc, player.yloc, c='r', s=5, label='opponents')
     plot_pitch_markings()
+    plt.legend(loc='best')
     return
 
 
