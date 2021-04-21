@@ -12,6 +12,28 @@ class player:
     self.xloc = x_loc
     self.yloc = y_loc
     self.team = team
+    
+def get_score(loaded_file):
+    home_goals = 0
+    away_goals = 0
+
+    shots = get_specific_events(loaded_file, 'Shot')
+    teams = get_teams(loaded_file)
+
+    for i in range(np.size(shots)):
+        if shots[i]['shot']['outcome']['name'] == 'Goal':
+            if shots[i]['team']['name'] == teams[0]:
+                home_goals += 1
+            else:
+                away_goals += 1
+
+    if home_goals == away_goals:
+        result = 'Draw'
+    elif home_goals > away_goals:
+        result = 'Home Win'
+    else:
+        result = 'Away Win'
+    return home_goals, away_goals, result
 
 
 '''This gets the names of both the teams, as there is a dict at the start of the
