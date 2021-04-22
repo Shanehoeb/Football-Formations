@@ -19,3 +19,10 @@ Relevant Papers :
 Links : 
 PCA : - https://www.youtube.com/watch?v=ofWji_wQBEE
       - https://jakevdp.github.io/PythonDataScienceHandbook/05.09-principal-component-analysis.html
+
+Will's links : - https://github.com/jin-zhe/computer-vision
+                -https://github.com/ridouaneg/DeepFootballAnalysis
+                  https://github.com/Kshitij-Patil/Player-Segmentation
+                  https://github.com/KananVyas/PlayerDetection
+                  https://github.com/abhineet123/Deep-Learning-for-Tracking-and-Detection
+                  
