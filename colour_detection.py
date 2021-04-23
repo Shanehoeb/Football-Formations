@@ -11,9 +11,25 @@ def draw_lines_between_players(img, team, colour, thickness):
 	return
 
 
+def plot(mask, colour, colour_tuple, max_radius, frame):
+	contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+	for pic, contour in enumerate(contours):
+		area = cv2.contourArea(contour)
+		if 0 < area < 300:
+			x, y, w, h = cv2.boundingRect(contour)
+			((X, Y), radius) = cv2.minEnclosingCircle(contour)
+			M = cv2.moments(contour)
+			center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+			if radius < max_radius:
+				frame = cv2.circle(frame, (int(X), int(Y)), int(radius), colour_tuple, 2)
+				#team1.append([x, y])
+				cv2.putText(frame, colour, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, colour_tuple)
+		#draw_lines_between_players(imageFrame, team1, (0,0,255), 3)
+
 # Capturing video through webcam
 webcam = cv2.VideoCapture(0)
-webcam = cv2.VideoCapture('football_manager_Trim.mp4')
+webcam = cv2.VideoCapture('football_manager.mp4')
 image, success = webcam.read()
 
 # Start a while loop
@@ -62,43 +78,10 @@ while 1:
 	blue_mask = cv2.dilate(blue_mask, kernal)
 	res_blue = cv2.bitwise_and(imageFrame, imageFrame, mask=blue_mask)
 
-	# Creating contour to track red color
-	contours, hierarchy = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	plot(red_mask, 'red', (0, 0, 255), 10, imageFrame)
+	plot(white_mask, 'white', (255, 255, 255), 10, imageFrame)
+	plot(white_mask, 'ball', (0, 255, 0), 2, imageFrame)
 
-	team1 = []
-	team2 = []
-	for pic, contour in enumerate(contours):
-		area = cv2.contourArea(contour)
-		if 0 < area < 300:
-			x, y, w, h = cv2.boundingRect(contour)
-			((X, Y), radius) = cv2.minEnclosingCircle(contour)
-			M = cv2.moments(contour)
-			center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-			if radius < 10:
-				imageFrame = cv2.circle(imageFrame, (int(X), int(Y)), int(radius), (0, 0, 255), 2)
-				#team1.append([x, y])
-				cv2.putText(imageFrame, "Red", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255))
-		#draw_lines_between_players(imageFrame, team1, (0,0,255), 3)
-
-
-	contours, heirachy = cv2.findContours(white_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-	for pic, contour in enumerate(contours):
-		area = cv2.contourArea(contour)
-		if 0 < area < 300:
-			x, y, w, h = cv2.boundingRect(contour)
-			((X, Y), radius) = cv2.minEnclosingCircle(contour)
-			M = cv2.moments(contour)
-			center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-			if radius < 10:
-				if radius < 2:
-					imageFrame = cv2.circle(imageFrame, (int(X), int(Y)), int(radius), (0, 255, 0), 2)
-				#team2.append([x, y])
-					cv2.putText(imageFrame, "Ball", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0))
-				else:
-					imageFrame = cv2.circle(imageFrame, (int(X), int(Y)), int(radius), (255, 255, 255), 2)
-					cv2.putText(imageFrame, "White", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255))
-
-		#draw_lines_between_players(imageFrame, team2, (0,255,0), 3)
 
 	cv2.imshow("Multiple Color Detection in Real-Time", imageFrame)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
