@@ -4,9 +4,16 @@ import numpy as np
 
 # Python code for Multiple Color Detection
 
+def draw_lines_between_players(img, team, colour, thickness):
+	if np.shape(team)[0] > 1:
+		for i in range(np.shape(team)[0]-1):
+			cv2.line(img, (team[i][0], team[i][1]), (team[i+1][0], team[i+1][1]), colour, thickness)
+	return
+
+
 # Capturing video through webcam
 webcam = cv2.VideoCapture(0)
-webcam = cv2.VideoCapture('bay_vs_dor.mp4')
+webcam = cv2.VideoCapture('football_manager_Trim.mp4')
 image, success = webcam.read()
 
 # Start a while loop
@@ -34,6 +41,13 @@ while 1:
 	blue_upper = np.array([120, 255, 255], np.uint8)
 	blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
 
+
+	lower_white = np.array([0,0,200], np.uint8)
+	upper_white = np.array([145,60,255], np.uint8)
+	white_mask = cv2.inRange(hsvFrame, lower_white, upper_white)
+
+	lower_yellow = np.array([22, 93, 0])
+	upper_yellow = np.array([45, 255, 255])
 	# Morphological Transform, Dilation
 	# for each color and bitwise_and operator
 	# between imageFrame and mask determines
@@ -51,30 +65,42 @@ while 1:
 	# Creating contour to track red color
 	contours, hierarchy = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+	team1 = []
+	team2 = []
 	for pic, contour in enumerate(contours):
 		area = cv2.contourArea(contour)
-		if area > 300:
+		if 0 < area < 300:
 			x, y, w, h = cv2.boundingRect(contour)
-			if h >= 1.5 * w:
-				if w > 15 and h >= 15:
-					imageFrame = cv2.rectangle(imageFrame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+			((X, Y), radius) = cv2.minEnclosingCircle(contour)
+			M = cv2.moments(contour)
+			center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+			if radius < 10:
+				imageFrame = cv2.circle(imageFrame, (int(X), int(Y)), int(radius), (0, 0, 255), 2)
+				#team1.append([x, y])
+				cv2.putText(imageFrame, "Red", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255))
+		#draw_lines_between_players(imageFrame, team1, (0,0,255), 3)
 
-					cv2.putText(imageFrame, "Red Colour", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
 
-	# Creating contour to track blue color
-	contours, hierarchy = cv2.findContours(blue_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
+	contours, heirachy = cv2.findContours(white_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 	for pic, contour in enumerate(contours):
 		area = cv2.contourArea(contour)
-		if area > 300:
+		if 0 < area < 300:
 			x, y, w, h = cv2.boundingRect(contour)
-			if h >= 1.5 * w:
-				if w > 15 and h >= 15:
-					imageFrame = cv2.rectangle(imageFrame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+			((X, Y), radius) = cv2.minEnclosingCircle(contour)
+			M = cv2.moments(contour)
+			center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+			if radius < 10:
+				if radius < 2:
+					imageFrame = cv2.circle(imageFrame, (int(X), int(Y)), int(radius), (0, 255, 0), 2)
+				#team2.append([x, y])
+					cv2.putText(imageFrame, "Ball", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0))
+				else:
+					imageFrame = cv2.circle(imageFrame, (int(X), int(Y)), int(radius), (255, 255, 255), 2)
+					cv2.putText(imageFrame, "White", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255))
 
-					cv2.putText(imageFrame, "Blue Colour", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0))
+		#draw_lines_between_players(imageFrame, team2, (0,255,0), 3)
 
-	cv2.imshow("Multiple Color Detection in Real-TIme", imageFrame)
+	cv2.imshow("Multiple Color Detection in Real-Time", imageFrame)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
 	success, image = webcam.read()
