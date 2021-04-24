@@ -11,5 +11,11 @@ Plan Outline
 6. Use EPV/Pitch Control models on FM data to evaluate collective team movement
 
 
+Files for each step 
+
+1) FM_video_edit
+2) circles.py and Mark&Josh functions
+3) track.m and particle.m -- > Requires data in csv/excel format Frame_Number| x_coor | y_coor
+
 
 
