@@ -1,7 +1,7 @@
-#FM Data Extraction : Extracting player trajectories and event data from 2D FM Gameplay
+FM Data Extraction : Extracting player trajectories and event data from 2D FM Gameplay
 
 
-#Plan Outline  
+Plan Outline  
 
 1. Retrieve video clips of football manager gameplay
 2. Use object detection algorithms to identify player positions and ball position for each frame of video clip
