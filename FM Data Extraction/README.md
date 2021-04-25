@@ -17,6 +17,7 @@ Files for each step
 2) circles.py and Mark&Josh functions
 3) track.m and particle.m -- > Requires data in csv/excel format Frame_Number| x_coor | y_coor
 4) Soccer event recognition
+5) Scaler.py
 
 
 
