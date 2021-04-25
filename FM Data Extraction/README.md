@@ -16,7 +16,7 @@ Files for each step
 1) FM_video_edit
 2) circles.py and Mark&Josh functions
 3) track.m and particle.m -- > Requires data in csv/excel format Frame_Number| x_coor | y_coor
-4) Soccer event recognition
+4) Soccer event recognition --> requires input in pickle file, array of rows columns and 46 columns where the entries are the x-y positions of players at every frame
 5) Scaler.py
 
 
