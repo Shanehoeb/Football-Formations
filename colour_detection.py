@@ -7,13 +7,13 @@ import numpy as np
 def draw_lines_between_players(img, team, colour, thickness):
 	if np.shape(team)[0] > 1:
 		for i in range(np.shape(team)[0]-1):
-			cv2.line(img, (team[i][0], team[i][1]), (team[i+1][0], team[i+1][1]), colour, thickness)
+			for j in range(i, np.shape(team)[0]):
+				cv2.line(img, (team[i][0], team[i][1]), (team[j][0], team[j][1]), colour, thickness)
 	return
 
 
-def plot(mask, colour, colour_tuple, max_radius, frame):
+def plot_circle(mask, colour, colour_tuple, max_radius, frame, size):
 	contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
 	for pic, contour in enumerate(contours):
 		area = cv2.contourArea(contour)
 		if 0 < area < 300:
@@ -22,14 +22,27 @@ def plot(mask, colour, colour_tuple, max_radius, frame):
 			M = cv2.moments(contour)
 			center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 			if radius < max_radius:
-				frame = cv2.circle(frame, (int(X), int(Y)), int(radius), colour_tuple, 2)
-				#team1.append([x, y])
+				frame = cv2.circle(frame, (int(X), int(Y)), int(radius), colour_tuple, size)
 				cv2.putText(frame, colour, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, colour_tuple)
 		#draw_lines_between_players(imageFrame, team1, (0,0,255), 3)
 
+def plot_rectangle(mask, colour, colour_tuple, max_wh, frame):
+	contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	team = []
+	for pic, contour in enumerate(contours):
+		area = cv2.contourArea(contour)
+		if area > 300:
+			x, y, w, h = cv2.boundingRect(contour)
+			if h >= 1.5 * w:
+				if w > max_wh and h >= max_wh:
+					imageFrame = cv2.rectangle(frame, (x, y), (x + w, y + h), colour_tuple, 2)
+					team.append([x, y])
+					cv2.putText(frame, colour, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, colour_tuple)
+	return team
+
 # Capturing video through webcam
 webcam = cv2.VideoCapture(0)
-webcam = cv2.VideoCapture('football_manager.mp4')
+webcam = cv2.VideoCapture('red_vs_blue.mp4')
 image, success = webcam.read()
 
 # Start a while loop
@@ -78,9 +91,13 @@ while 1:
 	blue_mask = cv2.dilate(blue_mask, kernal)
 	res_blue = cv2.bitwise_and(imageFrame, imageFrame, mask=blue_mask)
 
-	plot(red_mask, 'red', (0, 0, 255), 10, imageFrame)
-	plot(white_mask, 'white', (255, 255, 255), 10, imageFrame)
-	plot(white_mask, 'ball', (0, 255, 0), 2, imageFrame)
+	red_team = plot_rectangle(red_mask, 'red', (0, 0, 255), 15, imageFrame)
+	blue_team = plot_rectangle(blue_mask, 'blue', (255, 0, 0), 15, imageFrame)
+	print('red team locations: ', red_team)
+	print('blue team locations: ', blue_team)
+	plot_circle(white_mask, 'ball', (0, 255, 0), 2, imageFrame, 2)
+	draw_lines_between_players(imageFrame, red_team, (0, 0, 255), 2)
+	draw_lines_between_players(imageFrame, blue_team, (255, 0, 0), 2)
 
 
 	cv2.imshow("Multiple Color Detection in Real-Time", imageFrame)
