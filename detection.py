@@ -11,7 +11,7 @@ def draw_lines_between_players(img, team, colour, thickness):
 	return
 
 
-vidcap = cv2.VideoCapture('liv_lec.mp4')
+vidcap = cv2.VideoCapture('red_vs_blue.mp4')
 success,image = vidcap.read()
 count = 0
 success = True

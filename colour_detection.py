@@ -14,6 +14,7 @@ def draw_lines_between_players(img, team, colour, thickness):
 
 def plot_circle(mask, colour, colour_tuple, max_radius, frame, size):
 	contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	team = []
 	for pic, contour in enumerate(contours):
 		area = cv2.contourArea(contour)
 		if 0 < area < 300:
@@ -24,7 +25,9 @@ def plot_circle(mask, colour, colour_tuple, max_radius, frame, size):
 			if radius < max_radius:
 				frame = cv2.circle(frame, (int(X), int(Y)), int(radius), colour_tuple, size)
 				cv2.putText(frame, colour, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, colour_tuple)
+				team.append([x, y])
 		#draw_lines_between_players(imageFrame, team1, (0,0,255), 3)
+	return team
 
 def plot_rectangle(mask, colour, colour_tuple, max_wh, frame):
 	contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -42,7 +45,7 @@ def plot_rectangle(mask, colour, colour_tuple, max_wh, frame):
 
 # Capturing video through webcam
 webcam = cv2.VideoCapture(0)
-webcam = cv2.VideoCapture('red_vs_blue.mp4')
+webcam = cv2.VideoCapture('football_manager.mp4')
 image, success = webcam.read()
 
 # Start a while loop
@@ -51,6 +54,7 @@ while 1:
 	# Reading the video from the
 	# webcam in image frames
 	_, imageFrame = webcam.read()
+	imageFrame = imageFrame[95:685, 170:1100]
 
 	# Convert the imageFrame in
 	# BGR(RGB color space) to
@@ -91,14 +95,11 @@ while 1:
 	blue_mask = cv2.dilate(blue_mask, kernal)
 	res_blue = cv2.bitwise_and(imageFrame, imageFrame, mask=blue_mask)
 
-	red_team = plot_rectangle(red_mask, 'red', (0, 0, 255), 15, imageFrame)
-	blue_team = plot_rectangle(blue_mask, 'blue', (255, 0, 0), 15, imageFrame)
-	print('red team locations: ', red_team)
-	print('blue team locations: ', blue_team)
+	red_team = plot_circle(red_mask, 'red', (0, 0, 255), 10, imageFrame, 2)
+	white_team = plot_circle(white_mask, 'white', (255, 0, 0), 10, imageFrame, 2)
 	plot_circle(white_mask, 'ball', (0, 255, 0), 2, imageFrame, 2)
-	draw_lines_between_players(imageFrame, red_team, (0, 0, 255), 2)
-	draw_lines_between_players(imageFrame, blue_team, (255, 0, 0), 2)
-
+	print(red_team)
+	print(white_team)
 
 	cv2.imshow("Multiple Color Detection in Real-Time", imageFrame)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
