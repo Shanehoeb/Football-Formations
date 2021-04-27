@@ -46,7 +46,7 @@ def plot_rectangle(mask, colour, colour_tuple, max_wh, frame):
 
 # Capturing video through webcam
 webcam = cv2.VideoCapture(0)
-webcam = cv2.VideoCapture('Vid1.mp4')
+webcam = cv2.VideoCapture('football_manager_Trim.mp4')
 image, success = webcam.read()
 
 # Start a while loop
