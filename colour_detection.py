@@ -1,5 +1,6 @@
 import cv2
 import os
+import imutils
 import numpy as np
 
 # Python code for Multiple Color Detection
@@ -45,7 +46,7 @@ def plot_rectangle(mask, colour, colour_tuple, max_wh, frame):
 
 # Capturing video through webcam
 webcam = cv2.VideoCapture(0)
-webcam = cv2.VideoCapture('football_manager.mp4')
+webcam = cv2.VideoCapture('Vid1.mp4')
 image, success = webcam.read()
 
 # Start a while loop
@@ -54,7 +55,7 @@ while 1:
 	# Reading the video from the
 	# webcam in image frames
 	_, imageFrame = webcam.read()
-	imageFrame = imageFrame[95:685, 170:1100]
+	imageFrame = imutils.resize(imageFrame, width=800)
 
 	# Convert the imageFrame in
 	# BGR(RGB color space) to
@@ -96,10 +97,11 @@ while 1:
 	res_blue = cv2.bitwise_and(imageFrame, imageFrame, mask=blue_mask)
 
 	red_team = plot_circle(red_mask, 'red', (0, 0, 255), 10, imageFrame, 2)
-	white_team = plot_circle(white_mask, 'white', (255, 0, 0), 10, imageFrame, 2)
+	white_team = plot_circle(white_mask, 'blue', (255, 255, 255), 10, imageFrame, 2)
 	plot_circle(white_mask, 'ball', (0, 255, 0), 2, imageFrame, 2)
-	print(red_team)
-	print(white_team)
+	if np.shape(red_team)[0] <= 10 or np.shape(white_team)[0] <= 10:
+		draw_lines_between_players(imageFrame, red_team, (0, 0, 255), 2)
+		draw_lines_between_players(imageFrame, white_team, (255, 255, 255), 2)
 
 	cv2.imshow("Multiple Color Detection in Real-Time", imageFrame)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
