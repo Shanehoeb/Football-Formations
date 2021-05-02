@@ -2,8 +2,11 @@ import cv2
 import os
 import imutils
 import numpy as np
-
+from scipy.spatial import Delaunay
+from scipy.spatial import Voronoi, voronoi_plot_2d
 # Python code for Multiple Color Detection
+import pandas as pd
+
 
 def draw_lines_between_players(img, team, colour, thickness):
 	if np.shape(team)[0] > 1:
@@ -11,6 +14,49 @@ def draw_lines_between_players(img, team, colour, thickness):
 			for j in range(i, np.shape(team)[0]):
 				cv2.line(img, (team[i][0], team[i][1]), (team[j][0], team[j][1]), colour, thickness)
 	return
+
+
+def draw_delaunay(img,team,colour,thickness):
+	if np.shape(team)[0] > 2:
+		lines = Delaunay(team)
+		for count in range(len(lines.simplices)):
+				point1 = tuple(team[lines.simplices[count][0]])
+				point2 = tuple(team[lines.simplices[count][1]])
+				point3 = tuple(team[lines.simplices[count][2]])
+				cv2.line(img, point1, point2, colour, thickness)
+				cv2.line(img, point1, point3, colour, thickness)
+				cv2.line(img, point3, point2, colour, thickness)
+
+
+def draw_voronoi(img, team1, team2, colour, thickness):
+	if np.shape(team1)[0] > 2 and np.shape(team2)[0] > 2:
+		for i in range(len(team1)):
+				team2.append(team1[i])
+		vor = Voronoi(white_team)
+		i = 0
+		#vertices
+		while i < len(vor.vertices)-1:
+			point1 = (int(vor.vertices[i][0]), int(vor.vertices[i][1]))
+			point2 = (int(vor.vertices[i+1][0]), int(vor.vertices[i+1][1]))
+			cv2.line(img, point1, point2, colour, thickness)
+			i += 1
+		i = 0
+		while i < len(vor.vor.ridge_vertices)-1:
+			point1 = (int(vor.vor.ridge_vertices[i][0]), int(vor.vor.ridge_vertices[i][1]))
+			point2 = (int(vor.vor.ridge_vertices[i+1][0]), int(vor.vor.ridge_vertices[i+1][1]))
+			cv2.line(img, point1, point2, colour, thickness)
+			i+=1
+		pass
+
+def format_data(list,frame_number):
+	x_list = []
+	y_list = []
+	frame_list = []
+	for element in list:
+		x_list.append(element[0])
+		y_list.append(element[1])
+		frame_list.append(frame_number)
+	return x_list,y_list, frame_list
 
 
 def plot_circle(mask, colour, colour_tuple, max_radius, frame, size):
@@ -27,7 +73,6 @@ def plot_circle(mask, colour, colour_tuple, max_radius, frame, size):
 				frame = cv2.circle(frame, (int(X), int(Y)), int(radius), colour_tuple, size)
 				cv2.putText(frame, colour, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, colour_tuple)
 				team.append([x, y])
-		#draw_lines_between_players(imageFrame, team1, (0,0,255), 3)
 	return team
 
 def plot_rectangle(mask, colour, colour_tuple, max_wh, frame):
@@ -44,13 +89,64 @@ def plot_rectangle(mask, colour, colour_tuple, max_wh, frame):
 					cv2.putText(frame, colour, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, colour_tuple)
 	return team
 
+
+def array_magnitude(array):
+	return np.sqrt(array[0]**2 + array[1]**2)
+
+
+def separate_ball(ball_coords, team_1, team_2, tol):
+	new_ball_coords = []
+	for ball_coord in ball_coords:
+		is_ball = 0
+		for team_coord in team_1:
+			if array_magnitude(np.array(ball_coord) - np.array(team_coord)) > tol:
+				is_ball += 1
+		for team_coord in team_2:
+			if array_magnitude(np.array(ball_coord) - np.array(team_coord)) > tol:
+				is_ball += 1
+		if is_ball == 0:
+			new_ball_coords.append(ball_coord)
+	return new_ball_coords
+
+
+def transform_list(list):
+	x = []
+	for i in range(0, len(list)):
+		for element in list[i]:
+			x.append(element)
+	return x
+
+
+# Set range for color and
+# define mask
+red_lower = np.array([136, 87, 111], np.uint8)
+red_upper = np.array([180, 255, 255], np.uint8)
+
+blue_lower = np.array([94, 80, 2], np.uint8)
+blue_upper = np.array([120, 255, 255], np.uint8)
+
+lower_white = np.array([0,0,200], np.uint8)
+upper_white = np.array([145, 60, 255], np.uint8)
+
+lower_yellow = np.array([22, 93, 0])
+upper_yellow = np.array([45, 255, 255])
+
+
 # Capturing video through webcam
-webcam = cv2.VideoCapture(0)
-webcam = cv2.VideoCapture('football_manager_Trim.mp4')
+webcam = cv2.VideoCapture('Vid3.mp4')
+a = webcam.get(cv2.CAP_PROP_FPS)
 image, success = webcam.read()
 
+i = 0
+x = []
+y = []
+frame = []
+
+ball_x_array = []
+ball_y_array = []
+ball_frame_array = []
 # Start a while loop
-while 1:
+while i < 500:
 
 	# Reading the video from the
 	# webcam in image frames
@@ -63,25 +159,10 @@ while 1:
 	# color space
 	hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
 
-	# Set range for red color and
-	# define mask
-	red_lower = np.array([136, 87, 111], np.uint8)
-	red_upper = np.array([180, 255, 255], np.uint8)
 	red_mask = cv2.inRange(hsvFrame, red_lower, red_upper)
-
-	# Set range for blue color and
-	# define mask
-	blue_lower = np.array([94, 80, 2], np.uint8)
-	blue_upper = np.array([120, 255, 255], np.uint8)
 	blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
-
-
-	lower_white = np.array([0,0,200], np.uint8)
-	upper_white = np.array([145,60,255], np.uint8)
 	white_mask = cv2.inRange(hsvFrame, lower_white, upper_white)
 
-	lower_yellow = np.array([22, 93, 0])
-	upper_yellow = np.array([45, 255, 255])
 	# Morphological Transform, Dilation
 	# for each color and bitwise_and operator
 	# between imageFrame and mask determines
@@ -96,12 +177,31 @@ while 1:
 	blue_mask = cv2.dilate(blue_mask, kernal)
 	res_blue = cv2.bitwise_and(imageFrame, imageFrame, mask=blue_mask)
 
+	white_mask = cv2.dilate(white_mask, kernal)
+
 	red_team = plot_circle(red_mask, 'red', (0, 0, 255), 10, imageFrame, 2)
-	white_team = plot_circle(white_mask, 'blue', (255, 255, 255), 10, imageFrame, 2)
-	plot_circle(white_mask, 'ball', (0, 255, 0), 2, imageFrame, 2)
-	if np.shape(red_team)[0] <= 10 or np.shape(white_team)[0] <= 10:
-		draw_lines_between_players(imageFrame, red_team, (0, 0, 255), 2)
-		draw_lines_between_players(imageFrame, white_team, (255, 255, 255), 2)
+	blue_team = plot_circle(blue_mask, 'blue', (255, 0, 0), 10, imageFrame, 2)
+	ball = plot_circle(white_mask, 'ball', (255, 255, 255), 4, imageFrame, 2)
+
+	#ball_pos = plot_circle(white_mask, 'ball', (0, 255, 0), 2, imageFrame, 2)
+	draw_delaunay(imageFrame, red_team, (0, 0, 255), 3)
+	draw_delaunay(imageFrame, blue_team, (0, 255, 0), 3)
+	#draw_voronoi(imageFrame,red_team,white_team, (0, 255, 0), 3)
+	blue_x_h, blue_y_h, frame_blue = format_data(blue_team, i)
+	red_x_h, red_y_h, frame_red = format_data(red_team, i)
+	ball_x, ball_y, frame_ball = format_data(ball, i)
+
+	x.append(blue_x_h)
+	y.append(blue_y_h)
+	frame.append(frame_blue)
+	x.append(red_x_h)
+	y.append(red_y_h)
+	frame.append(frame_red)
+
+	ball_x_array.append(ball_x)
+	ball_y_array.append(ball_y)
+	ball_frame_array.append(frame_ball)
+	i +=1
 
 	cv2.imshow("Multiple Color Detection in Real-Time", imageFrame)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -109,3 +209,20 @@ while 1:
 	success, image = webcam.read()
 webcam.release()
 cv2.destroyAllWindows()
+
+
+x = transform_list(x)
+y = transform_list(y)
+frame = transform_list(frame)
+
+x_ball = transform_list(ball_x_array)
+y_ball = transform_list(ball_y_array)
+ball_frame = transform_list(ball_frame_array)
+
+df = pd.DataFrame({"x_coor":x, "y_coor":y, "frame":frame})
+path_to_csv = 'CSVs/x_and_ys.csv'
+df.to_csv(path_to_csv)
+
+ball_df = pd.DataFrame({"x_coor":x_ball, "y_coor":y_ball, "frame":ball_frame})
+path_to_csv = 'CSVs/ball_loc.csv'
+ball_df.to_csv(path_to_csv)
