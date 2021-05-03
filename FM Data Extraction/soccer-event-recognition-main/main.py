@@ -29,7 +29,7 @@ def save_output(input_file, output):
 
 
 def debug_algorithm(seq):
-    test_file = os.path.join('input', 'test_data.pkl')
+    test_file = 'input/game_array.pkl'
     with open(test_file, 'rb') as f:
         data = pickle.load(f)
     print(f'Processing {seq}')
@@ -37,7 +37,7 @@ def debug_algorithm(seq):
     obtained_output = {seq: recognizer.find_events()}
     print(json.dumps(obtained_output, indent=2))
 
-    expected_json = os.path.join('output_expected', 'test_data_out_expected.json')
+    expected_json = os.path.join('output_expected', 'game_array.json')
     with open(expected_json, 'r') as f:
         full = json.load(f)
         expected_output = {seq: full[seq]}
@@ -46,14 +46,10 @@ def debug_algorithm(seq):
 
 
 def main():
-    data_file = os.path.join('input', 'test_data.pkl')
+    data_file = 'input/game_array.pkl'
     obtained_output = process_file(data_file, print_output=False, show_info=False, show_debug=False)
     save_output(data_file, obtained_output)
-    expected_json = os.path.join('output_expected', 'test_data_out_expected.json')
-    with open(expected_json, 'r') as f:
-        expected_output = json.load(f)
-    comparison = do_comparison(obtained_output, expected_output, include_counters=True)
-    report_results(comparison)
+    expected_json = os.path.join('output_expected', 'game_array.json')
 
 
 if __name__ == '__main__':

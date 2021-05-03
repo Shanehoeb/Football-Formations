@@ -3,31 +3,30 @@ import math
 
 # Constants
 # Minimal distance between the ball and the ball-possessing player (m)
-VicinityThreshold = 1.0
+VicinityThreshold = 1/52.5
 # Time required for a player to be considered a ball receiver (in frames)
-GracePeriodPlayer = 5
+GracePeriodPlayer = 3
 GracePeriodBall = 1
 # Minimal ball travel distance of an unsuccessful pass (m)
-MinFailedPassLength = 1.5
-# Minimal change in trajectory direction considered “significant” (radians)
-MinTrChangeAngle = math.pi / 8
+MinFailedPassLength = 0.05 # Minimal change in trajectory direction considered “significant” (radians)
+MinTrChangeAngle = math.pi/(8*52.5)
 # Minimal change in ball speed considered “significant”
-MinSpeedChangeFactor = 1.5
+MinSpeedChangeFactor = 1.5/52.5
 # Minimal distance from a goalpost for a kick to be considered a pass (m)
-GoalpostDistance = 5.0
+GoalpostDistance = 5/52.5
 
 # Other constants, that are not described in the paper
 # Number of frames to look back to calculate future trajectory of the ball
 TrajectoryBack = 3
 # Number of frames to generate trajectory for the ball
 TrajectoryForward = 6
-GoalLength = 7.32
+GoalLength = 7.32/52.5
 # Borders of the goal area
-GoalAreaY = GoalLength / 2 + 5.5
-GoalAreaX = 47
+GoalAreaY = GoalLength / 4
+GoalAreaX = 47/52.7
 # Pitch dimensions
-PitchHalfLength = 52.5
-PitchHalfWidth = 35  # Should be 34, but there are episodes with larger fields (and the game wasn't stopped)
+PitchHalfLength = 1.03
+PitchHalfWidth = 1.03  # Should be 34, but there are episodes with larger fields (and the game wasn't stopped)
 
 
 def is_same_team(p1, p2):

@@ -12,11 +12,12 @@ from result_reporting import do_comparison
 
 
 def load_files():
-    data_file = os.path.join('input', 'test_data.pkl')
-    labels_file = os.path.join('output_expected', 'test_data_out_expected.json')
+    data_file = 'input/game_array.pkl'
+    labels_file = os.path.join('output', 'test_data_out.json')
     # Load data
     with open(data_file, 'rb') as f:
         data = pickle.load(f)
+        print(data)
     # Load labels
     with open(labels_file, 'r') as f:
         expected_output = json.load(f)
